@@ -7,7 +7,7 @@ You must produce a json serialized dataframe that is a linear interpolation of w
 There may be null values, the security may not have traded that day for some reason (perhaps it is all gibbons day in west pennslytucky where this is traded, I don't know - do you?). You must skip these and still provide an interpolated result. If you have one or zero data points for a security you must return Nan/None or some other non-numerical value.
 
 Example:
-curl localhost:8080/post -X POST -H "Content-Type: application/json" -d '{
+curl localhost:8080 -X POST -H "Content-Type: application/json" -d '{
   "US Equity 1": {
     "2019-12-31 00:00:00": 292.09690559,
     "2020-01-01 00:00:00": null,

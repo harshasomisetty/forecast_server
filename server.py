@@ -6,37 +6,28 @@ from sklearn.linear_model import LinearRegression
 
 routes = web.RouteTableDef()
 
-
-@routes.get('/')
-async def handle_main(request):
-    text = "Main"
-    return web.Response(text=text)
-
-@routes.get('/name/{name}')
-async def handle_get(request):
-    name = request.match_info.get('name', "Anonymous")
-    text = "Hello, " + name
-    return web.Response(text=text)
-
-@routes.post('/forecast')
+@routes.post('/')
 async def handle_post(request):
     data = await request.json()
-    keys = list(data.keys())
-    values = {}
+    predictions = {}
 
-    for key in keys:
-        vals = np.array(list(data[key].values()))
-        vals = vals[vals != np.array(None)]
-        # print(vals)
-        model = LinearRegression().fit(np.arange(0, vals.size).reshape(-1, 1), vals)
-        values[key] = model.predict(np.array([vals.size]).reshape(-1, 1))[0]
-    print(values)
-    return web.Response(text="hi")
+    for key in data.keys():
+        prices = np.array([v for v in data[key].values() if v != None])
+        next_date = pd.to_datetime(pd.Series(data[key]).index[-1]) + BDay()
+        
+        if prices.size <=1:
+            predictions[key] = {str(next_date) : None}
+        else:
+            model = LinearRegression().fit(np.arange(0, prices.size).reshape(-1, 1), prices)
+            predictions[key] = {str(next_date): model.predict(np.array([prices.size]).reshape(-1, 1))[0]}
+    return web.json_response(predictions)
 
 app = web.Application()
 app.add_routes(routes)
 
-
+#TODO default endpoint handler
+#TODO bad json
 
 if __name__ == '__main__':
-    web.run_app(app, port=8080)
+    web.run_app(app, port=8000)
+
