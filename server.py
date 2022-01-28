@@ -17,9 +17,9 @@ async def handle_get(request):
 
 @routes.post('/post')
 async def handle_post(request):
-    data = await request.post()
-    # print(data.values())
-    print(data.len())
+    data = await request.json()
+    print(data.keys())
+    # print(data.len())
     return web.Response(text="hi")
 
 app = web.Application()
