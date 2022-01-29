@@ -2,9 +2,10 @@
 
 This "forecasting server" is a single POST endpoint server that, given json-formatted price history for equities, returns a linearly extrapolated price prediction.
 ** Running
-Users can run the server by first cloning the repo, then running the following in their terminal:
+This project was developed to run on python 3.7.10. Users can run the server by first cloning the repo, then running the following in their terminal:
 
 #+begin_src
+  pip install -r requirements.txt
   python server.py
 #+end_src
 
