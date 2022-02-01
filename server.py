@@ -25,21 +25,27 @@ async def handle_forecast(request):
         except AttributeError: # the payload json format is incorrect, so exit
             logging.warning("invalid data format: "+ str(data[key]))
             return web.Response(text="Error Invalid Data Format: "+key)
-        
-        try: 
+
+        if any([i <=0 for i in prices]):
+            logging.warning("Negative values are not allowed "+ str(data[key]))
+            return web.Response(text="Error Negative values are not allowed: "+key)
+
+        try:
             next_date = pd.to_datetime(pd.Series(data[key]).index[-1]) + BDay()
         except dateutil.parser._parser.ParserError:
             logging.warning("invalid string format "+ str(data[key]))
             return web.Response(text="Error Invalid String Format: "+key)
-        
+
         if prices.size <=1: # not enough data to make a prediction
             predictions[key] = {str(next_date) : None}
         else: # contruct lin reg model, make 1 step prediction the next result
-            
+
             # evenly spacing all data points regardless of exact date to make prediction
             model = LinearRegression().fit(np.arange(0, prices.size).reshape(-1, 1), prices)
+
+            # also, making the minimum prediction 0 incase prediction becomes negative
             predictions[key] = {str(next_date):
-                                model.predict(np.array([prices.size]).reshape(-1, 1))[0]}
+                                max(0, model.predict(np.array([prices.size]).reshape(-1, 1))[0])}
 
         logging.info(predictions[key])
 
@@ -50,7 +56,7 @@ app = web.Application()
 
 # all calls get routed to default endpoint function "handle forecast"
 app.add_routes([web.post('/{tail:.*}', handle_forecast)])
-                
+
 
 if __name__ == '__main__':
     web.run_app(app, port=8000)
